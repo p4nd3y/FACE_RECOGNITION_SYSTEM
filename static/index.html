@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biometric Intelligence & Attendance Platform | Vectorized KNN Facial Classification</title>
+  <meta name="description" content="Enterprise-grade face recognition and automated biometric attendance system powered by high-performance K-Nearest Neighbors (KNN) algorithms and real-time telemetry.">
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Ambient Cyber Background Grid -->
+  <div class="cyber-grid-background"></div>
+  <div class="glow-orb orb-primary"></div>
+  <div class="glow-orb orb-secondary"></div>
+
+  <!-- Notification Toast Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Main Application Wrapper -->
+  <div class="app-layout">
+
+    <!-- Header Navigation -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-radar-icon">
+          <i class="fa-solid fa-expand"></i>
+          <span class="radar-sweep"></span>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">AURA <span class="accent-text">BIOMETRICS</span></div>
+          <div class="brand-subtitle">Vectorized K-NN Facial Intelligence & Attendance Platform</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" id="tabBtnKiosk" data-tab="tab-kiosk" role="tab" aria-selected="true">
+          <i class="fa-solid fa-camera-viewfinder"></i> <span>Live Kiosk</span>
+        </button>
+        <button class="nav-tab" id="tabBtnEnroll" data-tab="tab-enroll" role="tab" aria-selected="false">
+          <i class="fa-solid fa-user-plus"></i> <span>Enrollment Studio</span>
+        </button>
+        <button class="nav-tab" id="tabBtnRegistry" data-tab="tab-registry" role="tab" aria-selected="false">
+          <i class="fa-solid fa-address-book"></i> <span>Subject Registry</span>
+        </button>
+        <button class="nav-tab" id="tabBtnAttendance" data-tab="tab-attendance" role="tab" aria-selected="false">
+          <i class="fa-solid fa-clock-rotate-left"></i> <span>Attendance & Audit</span>
+        </button>
+        <button class="nav-tab" id="tabBtnDiagnostics" data-tab="tab-diagnostics" role="tab" aria-selected="false">
+          <i class="fa-solid fa-microchip"></i> <span>KNN Diagnostic Lab</span>
+        </button>
+      </nav>
+
+      <!-- System Status Bar Indicators -->
+      <div class="header-telemetry">
+        <div class="telemetry-pill" title="Active Classifier Engine">
+          <span class="status-dot online"></span>
+          <span class="telemetry-label">MODEL:</span>
+          <span class="telemetry-val" id="headerModelVal">KNN (k=5)</span>
+        </div>
+        <div class="telemetry-pill" title="Enrolled Biometric Profiles">
+          <i class="fa-solid fa-users text-muted"></i>
+          <span class="telemetry-label">SUBJECTS:</span>
+          <span class="telemetry-val" id="headerSubjectsVal">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Top Biometric Status Ribbon -->
+    <div class="system-ribbon">
+      <div class="ribbon-channel">
+        <i class="fa-solid fa-shield-halved"></i> SECURE BIOMETRIC CHANNEL • 100x100 RGB TENSORS (30,000D)
+      </div>
+      <div class="ribbon-stream">
+        <span id="streamStatusText">SYSTEM INITIALIZED • HARDWARE CAMERA READY</span>
+      </div>
+      <div class="ribbon-time" id="systemClockDisplay">--:--:-- UTC</div>
+    </div>
+
+    <!-- Main Tab Content Area -->
+    <main class="main-content">
+
+      <!-- ============================================================= -->
+      <!-- TAB 1: LIVE RECOGNITION & ATTENDANCE KIOSK                     -->
+      <!-- ============================================================= -->
+      <section class="tab-pane active" id="tab-kiosk" role="tabpanel">
+        <div class="kiosk-grid">
+          
+          <!-- Left: Video Stream & Viewport -->
+          <div class="glass-card viewport-card">
+            <div class="card-header">
+              <div class="header-title-group">
+                <i class="fa-solid fa-video card-icon"></i>
+                <div>
+                  <h2 class="card-title">Real-Time Biometric Scanner</h2>
+                  <p class="card-subtitle">Continuous webcam inference with instant attendance verification</p>
+                </div>
+              </div>
+              <div class="viewport-controls">
+                <button id="toggleAudioBtn" class="btn-icon" title="Toggle Audio Chime">
+                  <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button id="switchSourceBtn" class="btn-secondary btn-sm" title="Upload Static Photo">
+                  <i class="fa-solid fa-upload"></i> Upload Image
+                </button>
+                <input type="file" id="staticImageInput" accept="image/*" style="display:none;">
+              </div>
+            </div>
+
+            <!-- Video Viewport Container -->
+            <div class="video-container" id="videoContainer">
+              <video id="webcamVideo" autoplay playsinline muted></video>
+              <canvas id="overlayCanvas"></canvas>
+              
+              <!-- Static Image Display Fallback -->
+              <img id="staticPreviewImg" alt="Biometric Preview" style="display:none;">
+
+              <!-- Viewport HUD Overlay Elements -->
+              <div class="viewport-hud-top">
+                <div class="hud-badge" id="cameraStatusBadge">
+                  <span class="status-pulse-dot"></span>
+                  <span id="cameraStatusText">CAMERA IDLE</span>
+                </div>
+                <div class="hud-badge" id="fpsDisplayBadge">
+                  <i class="fa-solid fa-gauge-high"></i> <span id="fpsCounter">0.0</span> FPS
+                </div>
+              </div>
+
+              <!-- Reticle Target Lines -->
+              <div class="viewport-crosshair">
+                <div class="crosshair-h"></div>
+                <div class="crosshair-v"></div>
+                <div class="scanning-laser-line" id="scanningLaser"></div>
+              </div>
+
+              <!-- Idle Prompt Overlay -->
+              <div class="viewport-idle-overlay" id="viewportIdleOverlay">
+                <div class="idle-icon-circle">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+                <h3>Optical Sensor Standby</h3>
+                <p>Activate live video stream or upload a portrait photo for biometric evaluation.</p>
+                <div class="idle-actions">
+                  <button id="startCameraBtn" class="btn-primary glow-btn">
+                    <i class="fa-solid fa-play"></i> Initialize Webcam
+                  </button>
+                  <button id="uploadImagePromptBtn" class="btn-secondary">
+                    <i class="fa-solid fa-file-arrow-up"></i> Load Photo
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stream Control Bar -->
+            <div class="viewport-bottom-bar">
+              <div class="stream-action-buttons">
+                <button id="stopCameraBtn" class="btn-danger btn-sm" style="display:none;">
+                  <i class="fa-solid fa-stop"></i> Stop Stream
+                </button>
+                <button id="captureSnapshotBtn" class="btn-secondary btn-sm" style="display:none;">
+                  <i class="fa-solid fa-camera"></i> Force Check-in
+                </button>
+              </div>
+              <div class="stream-telemetry-metrics">
+                <span class="metric-item">LATENCY: <strong id="latencyDisplay">0 ms</strong></span>
+                <span class="metric-separator">•</span>
+                <span class="metric-item">FACES DETECTED: <strong id="facesCountDisplay">0</strong></span>
+                <span class="metric-separator">•</span>
+                <span class="metric-item">DISTANCE METRIC: <strong id="metricTypeDisplay">Euclidean (L2)</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Live Telemetry & Verified Match Card -->
+          <div class="kiosk-sidebar">
+            
+            <!-- Active Match Outcome Card -->
+            <div class="glass-card match-card" id="matchOutcomeCard">
+              <div class="card-header">
+                <div class="header-title-group">
+                  <i class="fa-solid fa-id-card-clip card-icon"></i>
+                  <div>
+                    <h3 class="card-title">Subject Identification</h3>
+                    <p class="card-subtitle">Real-time K-NN biometric verification</p>
+                  </div>
+                </div>
+                <div id="matchStatusBadge" class="status-badge standby">
+                  STANDBY
+                </div>
+              </div>
+
+              <!-- Match Profile Showcase -->
+              <div class="match-profile-body">
+                <div class="match-avatar-wrapper">
+                  <div class="match-avatar-ring" id="matchAvatarRing">
+                    <img id="matchAvatarImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E" alt="Avatar">
+                  </div>
+                  <div class="confidence-circle-meter">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                      <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path id="matchCircleProgress" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div class="circle-text" id="matchCircleText">0%</div>
+                  </div>
+                </div>
+
+                <div class="match-details">
+                  <h3 class="subject-name" id="matchNameDisplay">No Subject Detected</h3>
+                  <div class="subject-meta-row">
+                    <span class="meta-tag" id="matchEmpIdDisplay"><i class="fa-solid fa-hashtag"></i> EMP-0000</span>
+                    <span class="meta-tag" id="matchDeptDisplay"><i class="fa-solid fa-building"></i> Department</span>
+                  </div>
+                  <div class="subject-meta-row">
+                    <span class="meta-tag" id="matchDistDisplay"><i class="fa-solid fa-ruler-combined"></i> Distance: --</span>
+                    <span class="meta-tag" id="matchTimestampDisplay"><i class="fa-solid fa-clock"></i> --:--:--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Top-k Neighbor Breakdown Visualizer -->
+              <div class="neighbor-breakdown-section" id="neighborBreakdownSection">
+                <div class="section-micro-header">
+                  <span>NEAREST NEIGHBOR VOTING (K=5)</span>
+                  <span id="votingMetricTag">DISTANCE WEIGHTED</span>
+                </div>
+                <div class="neighbor-list" id="matchNeighborList">
+                  <div class="neighbor-empty">Awaiting facial detection event...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Attendance Event Stream -->
+            <div class="glass-card recent-activity-card">
+              <div class="card-header">
+                <div class="header-title-group">
+                  <i class="fa-solid fa-list-check card-icon"></i>
+                  <div>
+                    <h3 class="card-title">Live Check-in Activity</h3>
+                    <p class="card-subtitle">Real-time attendance ledger</p>
+                  </div>
+                </div>
+                <button id="refreshLiveStreamBtn" class="btn-icon" title="Refresh Feed">
+                  <i class="fa-solid fa-rotate"></i>
+                </button>
+              </div>
+
+              <div class="live-activity-list" id="liveActivityList">
+                <!-- Dynamically populated entries -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB 2: BIOMETRIC ENROLLMENT STUDIO                             -->
+      <!-- ============================================================= -->
+      <section class="tab-pane" id="tab-enroll" role="tabpanel">
+        <div class="enroll-grid">
+          
+          <!-- Left Form: Subject Profile Details -->
+          <div class="glass-card form-card">
+            <div class="card-header">
+              <div class="header-title-group">
+                <i class="fa-solid fa-user-gear card-icon"></i>
+                <div>
+                  <h2 class="card-title">Subject Registration Profile</h2>
+                  <p class="card-subtitle">Register new personnel into the biometric vector database</p>
+                </div>
+              </div>
+            </div>
+
+            <form id="enrollmentForm" class="enroll-form" onsubmit="return false;">
+              <div class="form-group">
+                <label for="enrollFullName"><i class="fa-solid fa-signature"></i> Full Name *</label>
+                <input type="text" id="enrollFullName" class="glass-input" placeholder="e.g. Dr. Alan Turing" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="enrollEmpId"><i class="fa-solid fa-id-badge"></i> Employee / Subject ID</label>
+                  <input type="text" id="enrollEmpId" class="glass-input" placeholder="e.g. EMP-1912">
+                </div>
+                <div class="form-group">
+                  <label for="enrollDepartment"><i class="fa-solid fa-sitemap"></i> Department</label>
+                  <select id="enrollDepartment" class="glass-select">
+                    <option value="Engineering" selected>Engineering</option>
+                    <option value="Research & Development">Research & Development</option>
+                    <option value="Executive Management">Executive Management</option>
+                    <option value="Operations & Security">Operations & Security</option>
+                    <option value="Product Design">Product Design</option>
+                    <option value="Human Resources">Human Resources</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="enrollRole"><i class="fa-solid fa-briefcase"></i> Job Title / Designation</label>
+                  <input type="text" id="enrollRole" class="glass-input" placeholder="e.g. Senior Research Fellow">
+                </div>
+                <div class="form-group">
+                  <label for="enrollEmail"><i class="fa-solid fa-envelope"></i> Contact Email</label>
+                  <input type="email" id="enrollEmail" class="glass-input" placeholder="e.g. a.turing@enterprise.io">
+                </div>
+              </div>
+
+              <!-- Acquisition Mode Selector -->
+              <div class="form-group">
+                <label><i class="fa-solid fa-camera-rotate"></i> Facial Sample Acquisition Mode</label>
+                <div class="mode-toggle-group">
+                  <button type="button" class="mode-btn active" id="modeWebcamBurstBtn">
+                    <i class="fa-solid fa-bolt"></i> Live Camera Burst (30 Samples)
+                  </button>
+                  <button type="button" class="mode-btn" id="modeFileUploadBtn">
+                    <i class="fa-solid fa-images"></i> Batch Image Upload
+                  </button>
+                </div>
+              </div>
+
+              <!-- Camera Burst Controls -->
+              <div class="burst-controls-panel" id="burstPanel">
+                <div class="burst-status-bar">
+                  <span>BURST BUFFER: <strong id="burstCountDisplay">0 / 30 Samples</strong></span>
+                  <span id="burstStatusMsg" class="text-accent">READY</span>
+                </div>
+                <div class="burst-progress-track">
+                  <div class="burst-progress-fill" id="burstProgressFill" style="width: 0%;"></div>
+                </div>
+                <div class="burst-btn-row">
+                  <button type="button" id="startBurstCaptureBtn" class="btn-secondary btn-block">
+                    <i class="fa-solid fa-camera"></i> Start 30-Frame Facial Burst
+                  </button>
+                </div>
+              </div>
+
+              <!-- File Upload Dropzone -->
+              <div class="dropzone-panel" id="dropzonePanel" style="display:none;">
+                <input type="file" id="batchFilesInput" multiple accept="image/*" style="display:none;">
+                <div class="dropzone-box" id="dropzoneBox">
+                  <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                  <h4>Drag & Drop Facial Photos Here</h4>
+                  <p>Or click to browse multiple portrait images (JPEG, PNG, WebP)</p>
+                  <button type="button" id="browseFilesBtn" class="btn-secondary btn-sm">Select Files</button>
+                </div>
+              </div>
+
+              <!-- Submit Form -->
+              <div class="form-actions">
+                <button type="button" id="submitEnrollmentBtn" class="btn-primary glow-btn btn-block" disabled>
+                  <i class="fa-solid fa-cloud-check"></i> Enroll Subject & Retrain K-NN Model
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Right: Interactive Sample Gallery & Live Preview -->
+          <div class="glass-card preview-card">
+            <div class="card-header">
+              <div class="header-title-group">
+                <i class="fa-solid fa-grip card-icon"></i>
+                <div>
+                  <h3 class="card-title">Extracted Facial Vectors</h3>
+                  <p class="card-subtitle">Normalized 100x100 RGB crops ready for K-NN vectorization</p>
+                </div>
+              </div>
+              <button id="clearSamplesBtn" class="btn-secondary btn-sm" title="Clear Samples">
+                <i class="fa-solid fa-trash"></i> Clear
+              </button>
+            </div>
+
+            <!-- Embedded Live Camera for Enrollment -->
+            <div class="enroll-camera-viewport" id="enrollCameraViewport">
+              <video id="enrollVideo" autoplay playsinline muted></video>
+              <canvas id="enrollCanvas"></canvas>
+              <div class="enroll-hud-reticle"></div>
+            </div>
+
+            <!-- Samples Thumbnail Grid -->
+            <div class="sample-crops-grid" id="sampleCropsGrid">
+              <div class="empty-crops-placeholder">
+                <i class="fa-solid fa-image"></i>
+                <p>No facial crops acquired yet. Trigger camera burst or upload photos to preview normalized vectors.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB 3: SUBJECT REGISTRY & GALLERY                              -->
+      <!-- ============================================================= -->
+      <section class="tab-pane" id="tab-registry" role="tabpanel">
+        <div class="registry-container">
+          
+          <!-- Registry Header & Search Controls -->
+          <div class="glass-card registry-toolbar-card">
+            <div class="toolbar-flex">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="registrySearchInput" class="glass-input" placeholder="Search subjects by name, employee ID, or role...">
+              </div>
+              <div class="filter-group">
+                <select id="registryDeptFilter" class="glass-select">
+                  <option value="ALL">All Departments</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Research & Development">Research & Development</option>
+                  <option value="Executive Management">Executive Management</option>
+                  <option value="Operations & Security">Operations & Security</option>
+                </select>
+                <button id="reloadRegistryBtn" class="btn-secondary" title="Sync Dataset">
+                  <i class="fa-solid fa-rotate"></i> Sync & Retrain
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subject Cards Grid -->
+          <div class="subject-cards-grid" id="subjectCardsGrid">
+            <!-- Dynamically generated subject cards -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB 4: ATTENDANCE & AUDIT LOGS                                 -->
+      <!-- ============================================================= -->
+      <section class="tab-pane" id="tab-attendance" role="tabpanel">
+        <div class="attendance-container">
+          
+          <!-- KPI Metrics Row -->
+          <div class="kpi-metrics-row">
+            <div class="glass-card kpi-card">
+              <div class="kpi-icon-wrap primary">
+                <i class="fa-solid fa-clipboard-user"></i>
+              </div>
+              <div class="kpi-content">
+                <div class="kpi-label">TOTAL CHECK-INS TODAY</div>
+                <div class="kpi-value" id="kpiTotalCheckins">0</div>
+                <div class="kpi-sub">Across all camera channels</div>
+              </div>
+            </div>
+
+            <div class="glass-card kpi-card">
+              <div class="kpi-icon-wrap success">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div class="kpi-content">
+                <div class="kpi-label">VERIFIED MATCHES</div>
+                <div class="kpi-value" id="kpiVerifiedCount">0</div>
+                <div class="kpi-sub text-success">Authorized Personnel</div>
+              </div>
+            </div>
+
+            <div class="glass-card kpi-card">
+              <div class="kpi-icon-wrap alert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="kpi-content">
+                <div class="kpi-label">UNKNOWN / ANOMALY ALERTS</div>
+                <div class="kpi-value" id="kpiUnknownCount">0</div>
+                <div class="kpi-sub text-danger">Impostor Rejections</div>
+              </div>
+            </div>
+
+            <div class="glass-card kpi-card">
+              <div class="kpi-icon-wrap accent">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+              <div class="kpi-content">
+                <div class="kpi-label">AVG BIOMETRIC CONFIDENCE</div>
+                <div class="kpi-value" id="kpiAvgConfidence">0.0%</div>
+                <div class="kpi-sub text-accent">K-NN Probability Mean</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attendance Table & Toolbar -->
+          <div class="glass-card table-card">
+            <div class="card-header table-header">
+              <div class="header-title-group">
+                <i class="fa-solid fa-table-list card-icon"></i>
+                <div>
+                  <h3 class="card-title">Biometric Event Ledger</h3>
+                  <p class="card-subtitle">Timestamped audit trail of facial identification events</p>
+                </div>
+              </div>
+              <div class="table-actions">
+                <select id="attendanceStatusFilter" class="glass-select select-sm">
+                  <option value="ALL">All Statuses</option>
+                  <option value="VERIFIED">Verified Only</option>
+                  <option value="UNKNOWN_ALERT">Unknown Alerts</option>
+                </select>
+                <button id="exportCsvBtn" class="btn-primary btn-sm">
+                  <i class="fa-solid fa-file-csv"></i> Export CSV Report
+                </button>
+                <button id="clearAttendanceBtn" class="btn-danger btn-sm" title="Clear Logs">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Attendance Data Table -->
+            <div class="table-responsive">
+              <table class="enterprise-table" id="attendanceTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>TIMESTAMP</th>
+                    <th>SUBJECT</th>
+                    <th>EMPLOYEE ID</th>
+                    <th>DEPARTMENT</th>
+                    <th>CONFIDENCE</th>
+                    <th>DISTANCE (L2)</th>
+                    <th>STATUS</th>
+                    <th>CAMERA</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB 5: KNN DIAGNOSTIC & BENCHMARK LAB                          -->
+      <!-- ============================================================= -->
+      <section class="tab-pane" id="tab-diagnostics" role="tabpanel">
+        <div class="diagnostics-grid">
+          
+          <!-- Left: Hyperparameter Configuration Panel -->
+          <div class="glass-card diag-config-card">
+            <div class="card-header">
+              <div class="header-title-group">
+                <i class="fa-solid fa-sliders card-icon"></i>
+                <div>
+                  <h2 class="card-title">K-NN Hyperparameter Calibration</h2>
+                  <p class="card-subtitle">Fine-tune neighbor counts, distance metrics, and unknown rejection limits</p>
+                </div>
+              </div>
+            </div>
+
+            <form id="knnConfigForm" class="knn-form" onsubmit="return false;">
+              
+              <!-- K Neighbors Slider -->
+              <div class="form-group">
+                <div class="slider-header">
+                  <label for="knnKSlider"><i class="fa-solid fa-cubes-stacked"></i> K Neighbors Parameter (k)</label>
+                  <span class="slider-val-badge" id="knnKValDisplay">5</span>
+                </div>
+                <input type="range" id="knnKSlider" min="1" max="15" step="1" value="5" class="glass-slider">
+                <div class="slider-ticks">
+                  <span>1 (Overfit)</span>
+                  <span>3</span>
+                  <span>5 (Optimal)</span>
+                  <span>9</span>
+                  <span>15 (Smooth)</span>
+                </div>
+              </div>
+
+              <!-- Distance Metric -->
+              <div class="form-group">
+                <label for="knnMetricSelect"><i class="fa-solid fa-ruler"></i> Distance Metric</label>
+                <select id="knnMetricSelect" class="glass-select">
+                  <option value="euclidean" selected>Euclidean Distance (L2 Norm: sqrt(sum((x - y)^2)))</option>
+                  <option value="manhattan">Manhattan Distance (L1 Norm: sum(|x - y|))</option>
+                  <option value="cosine">Cosine Distance (1 - Cosine Similarity)</option>
+                </select>
+              </div>
+
+              <!-- Neighbor Weighting -->
+              <div class="form-group">
+                <label for="knnWeightsSelect"><i class="fa-solid fa-weight-hanging"></i> Neighbor Vote Weighting</label>
+                <select id="knnWeightsSelect" class="glass-select">
+                  <option value="distance" selected>Inverse Distance Weighted (w = 1 / (d + eps))</option>
+                  <option value="uniform">Uniform Weighting (w = 1 / k)</option>
+                </select>
+              </div>
+
+              <!-- Unknown Impostor Distance Threshold -->
+              <div class="form-group">
+                <div class="slider-header">
+                  <label for="knnThresholdSlider"><i class="fa-solid fa-shield-slash"></i> Unknown Rejection Threshold (&theta;)</label>
+                  <span class="slider-val-badge" id="knnThresholdValDisplay">3400</span>
+                </div>
+                <input type="range" id="knnThresholdSlider" min="1000" max="8000" step="100" value="3400" class="glass-slider">
+                <p class="form-help-text">Face vectors with minimum nearest-neighbor distance exceeding &theta; are categorized as Unknown Impostors.</p>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" id="applyKnnConfigBtn" class="btn-primary glow-btn btn-block">
+                  <i class="fa-solid fa-check-double"></i> Apply K-NN Configuration
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Right: Mathematical Diagnostics & Inter-Class Distance Matrix -->
+          <div class="glass-card diag-matrix-card">
+            <div class="card-header">
+              <div class="header-title-group">
+                <i class="fa-solid fa-network-wired card-icon"></i>
+                <div>
+                  <h3 class="card-title">Inter-Class Centroid Distance Matrix</h3>
+                  <p class="card-subtitle">Euclidean distance separation between enrolled facial profile clusters</p>
+                </div>
+              </div>
+              <button id="refreshDiagBtn" class="btn-secondary btn-sm">
+                <i class="fa-solid fa-rotate"></i> Refresh Matrix
+              </button>
+            </div>
+
+            <!-- Inter-Class Matrix Heatmap Container -->
+            <div class="distance-matrix-wrapper" id="distanceMatrixWrapper">
+              <!-- Dynamically populated table matrix -->
+            </div>
+
+            <!-- Algorithm Theoretical Formulation -->
+            <div class="math-spec-box">
+              <h4><i class="fa-solid fa-calculator"></i> Mathematical Formulation of K-NN Classification</h4>
+              <p>For a query face feature vector $\mathbf{x} \in \mathbb{R}^{30000}$ and training set $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^N$:</p>
+              <div class="math-formula">
+                $$d(\mathbf{x}, \mathbf{x}_i) = \left(\sum_{j=1}^{30000} |x_j - x_{i,j}|^2\right)^{\frac{1}{2}}, \quad \hat{y} = \arg\max_{c \in \mathcal{C}} \sum_{i \in \mathcal{N}_k(\mathbf{x}), y_i = c} \frac{1}{d(\mathbf{x}, \mathbf{x}_i) + \epsilon}$$
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div>AURA Enterprise Biometric Framework • Vectorized NumPy K-NN Architecture • OpenCV 5.0</div>
+      <div>Operating under ISO/IEC 19794-5 Biometric Data Interchange Standard Compliance</div>
+    </footer>
+
+  </div>
+
+  <!-- Main Application JavaScript -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
